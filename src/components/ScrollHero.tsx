@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -10,47 +10,56 @@ import {
   type MotionValue,
 } from "framer-motion";
 
-// Scroll-driven hero (inspiration: sandracreates.com).
-// One `scrollYProgress` drives every layer:
-//   0      -> whole girl illustration, uncropped
-//   0-0.4  -> zoom into her face
-//   ~0.4   -> cut to black
-//   0.42+  -> cobweb + "DESIGNER'S / CHAOS" fade in
-//   0.52+  -> the two words fly straight off the top / bottom of the frame
-//             (no opacity change — they stay solid until physically gone)
-//   0.58+  -> 4 garment cutouts flip through, card-style, one axis, no fade.
-//             Most of the scroll is spent holding each image flat & readable;
-//             the flip itself is a short slice at the end of each image's range.
+// Scroll-driven hero (inspiration: sandracreates.com). One pinned container,
+// one `scrollYProgress`. Six stages:
+//
+//   progress       stage
+//   0    - 0.20     1  girl.png zooms from full illustration into her face
+//   0.20 - 0.26     2  girl fades to a solid-black beat
+//   0.24 - 0.30     -  video fades up out of the black
+//   0.30 - 0.52     3  RESTING STATE: video loops, "DESIGNER'S / CHAOS" held
+//                      close together on top. Nothing moves if the user stops
+//                      scrolling — video sustains itself via native `loop`.
+//   0.52 - 0.60     4  video fades out + the two words separate & exit,
+//                      both tied to this one slice, simultaneously
+//   0.58 +          5  bg.jpeg is the visible background — never fades again
+//   0.60 - 1.0      6  4 outfit images hard-flip through on rotateX (no fade)
+//
 // Everything scrubs forward and backward with the scroll.
-const CROSSFADE = 0.42;
+
+const GIRL_GONE_AT = 0.26;
+// Video plays whenever progress is inside (roughly) stages 2-4.
+const VIDEO_RANGE: [number, number] = [0.22, 0.52];
 
 // Per-image scroll ranges in full-progress space.
 // [enter start, flat (held from here), flip start, flip end/exit]
-// The flip only happens over [flip start -> flip end]; everything before
-// that is the image sitting still. Next image's enter overlaps the previous
-// image's flip so there's never a frame with nothing flat on screen.
+// Image 1 has no "flip in" — it just appears flat (starts at rotateX 0),
+// holds, then flips away like the rest.
 const FLIPS: [number, number, number, number][] = [
-  [0.56, 0.575, 0.655, 0.665], // image 1
-  [0.655, 0.67, 0.75, 0.76], // image 2
-  [0.75, 0.765, 0.845, 0.855], // image 3
-  [0.845, 0.86, 0.99, 1.0], // image 4 (holds to the end)
+  [0.5, 0.5, 0.6, 0.61], // image 1 — appears flat, no entry flip
+  [0.6, 0.615, 0.71, 0.72], // image 2
+  [0.72, 0.735, 0.83, 0.84], // image 3
+  [0.84, 0.855, 0.99, 1.0], // image 4 (holds to the end)
 ];
 
 function useFlip(progress: MotionValue<number>, i: number) {
   const [enter, flat, flipStart, flipEnd] = FLIPS[i];
-  // -90 (edge-on, entering) -> 0 (flat, held) -> 0 -> 90 (edge-on, leaving).
+  // Image 0 starts flat (0); the rest flip in from edge-on (-90).
+  const enterAngle = i === 0 ? 0 : -90;
+  // ... -> 0 (flat, held) -> 0 -> 90 (edge-on, leaving).
   // Opacity is a constant 1 — the image vanishing at 90deg is pure geometry.
-  const rotateX = useTransform(
+  return useTransform(
     progress,
     [enter, flat, flipStart, flipEnd],
-    [-90, 0, 0, 90],
+    [enterAngle, 0, 0, 90],
   );
-  return rotateX;
 }
 
 export default function ScrollHero() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [girlGone, setGirlGone] = useState(false);
+  const [videoActive, setVideoActive] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -58,37 +67,65 @@ export default function ScrollHero() {
   });
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setGirlGone(v > CROSSFADE + 0.03);
+    setGirlGone(v > GIRL_GONE_AT + 0.02);
+    setVideoActive(v > VIDEO_RANGE[0] && v < VIDEO_RANGE[1]);
   });
 
-  // Girl — starts at scale 1, zooms in. clamp:true (default) caps the ends.
-  const girlScale = useTransform(scrollYProgress, [0, 0.4], [1, 3.4]);
-  const girlOpacity = useTransform(scrollYProgress, [0.3, 0.4], [1, 0]);
+  // Stage 3 is a "resting state": the video's native `loop` sustains playback
+  // with no scroll input. We only start/stop it as the range is entered/left —
+  // scrolling back up into the range re-triggers play(), so it recovers.
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+    if (videoActive) {
+      vid.play().catch(() => {});
+    } else {
+      vid.pause();
+    }
+  }, [videoActive]);
 
-  // Black holds solid from the wipe onward.
-  const blackOpacity = useTransform(scrollYProgress, [0.26, 0.38], [0, 1]);
+  // Stage 1 — girl zooms into her face.
+  const girlScale = useTransform(scrollYProgress, [0, 0.2], [1, 3.4]);
+  // Stage 2 — girl crossfades to solid black (the black div below is opaque).
+  const girlOpacity = useTransform(scrollYProgress, [0.2, 0.26], [1, 0]);
 
-  // Cobweb fades up out of the black, settles by 0.5, then fades back to
-  // solid black as the text exits — flips begin on clean black.
-  const cobwebOpacity = useTransform(
+  // Video fades up out of the black, HOLDS flat through the resting state,
+  // then fades out over exactly the same 0.42 -> 0.5 slice the words separate,
+  // so it's fully gone the instant they've cleared the frame.
+  const videoOpacity = useTransform(
     scrollYProgress,
-    [0.42, 0.5, 0.52, 0.57],
+    [0.24, 0.3, 0.42, 0.5],
     [0, 1, 1, 0],
   );
-  const cobwebScale = useTransform(scrollYProgress, [0.42, 0.5], [1.1, 1]);
 
-  // "DESIGNER'S CHAOS" fades in (opacity only here), settles, then the two
-  // words fly clean off the frame — up and down — at a constant opacity 1.
-  const textOpacity = useTransform(scrollYProgress, [0.42, 0.48], [0, 1]);
+  // Solid-black beat: opaque only for stage 2, then transparent so the video
+  // (and later bg) show through. Reverses cleanly.
+  const blackBeatOpacity = useTransform(
+    scrollYProgress,
+    [0.19, 0.22, 0.29, 0.31],
+    [0, 1, 1, 0],
+  );
+
+  // Stage 5 — bg.jpeg fades in as the video fades out / words leave, fully
+  // there by 0.5, then holds forever. No transform past that point.
+  const bgOpacity = useTransform(scrollYProgress, [0.42, 0.5], [0, 1]);
+
+  // The flip stack is hidden until the words have cleared (~0.48).
+  const stackVisible = useTransform(scrollYProgress, [0.46, 0.49], [0, 1]);
+
+  // Text: fades in over the video, held close together through the resting
+  // state, then separates and exits over a short slice (0.42 -> 0.5) — full
+  // opacity the whole time it moves (only the video under it fades).
+  const textOpacity = useTransform(scrollYProgress, [0.3, 0.35], [0, 1]);
   const designerY = useTransform(
     scrollYProgress,
-    [0.44, 0.48, 0.5, 0.57],
-    [40, 0, 0, -900], // px: settle, hold, then well past the top edge
+    [0.31, 0.35, 0.42, 0.5],
+    [40, 0, 0, -900], // settle, hold through resting state, then off the top
   );
   const chaosY = useTransform(
     scrollYProgress,
-    [0.44, 0.48, 0.5, 0.57],
-    [40, 0, 0, 900], // px: settle, hold, then well past the bottom edge
+    [0.31, 0.35, 0.42, 0.5],
+    [40, 0, 0, 900], // settle, hold, then off the bottom
   );
 
   const rotate0 = useFlip(scrollYProgress, 0);
@@ -98,9 +135,34 @@ export default function ScrollHero() {
   const rotations = [rotate0, rotate1, rotate2, rotate3];
 
   return (
-    <section ref={containerRef} className="relative h-[560vh] bg-black">
+    <section ref={containerRef} className="relative h-[680vh] bg-black">
       <div className="sticky top-0 h-screen overflow-hidden bg-black">
-        {/* Girl layer — object-contain so progress 0 shows the entire image */}
+        {/* Stage 5 — permanent background. Lowest layer, fades in once.
+            Source is 2048x3068 (vertical), rotated 90° to fill the viewport
+            horizontally — box sized with width/height swapped. */}
+        <motion.div
+          style={{ opacity: bgOpacity }}
+          className="pointer-events-none absolute inset-0 overflow-hidden"
+        >
+          <div className="absolute left-1/2 top-1/2 h-[100vw] w-[100vh] -translate-x-1/2 -translate-y-1/2 rotate-90">
+            <Image
+              src="/bg.jpeg"
+              alt=""
+              fill
+              sizes="100vh"
+              className="object-cover"
+            />
+          </div>
+        </motion.div>
+
+        {/* Solid black beat — sits above bg, below girl/video. Opaque only
+            for the stage-2 beat, then clears so bg/video show through. */}
+        <motion.div
+          style={{ opacity: blackBeatOpacity }}
+          className="pointer-events-none absolute inset-0 bg-black"
+        />
+
+        {/* Stage 1 — girl. object-contain so progress 0 shows the whole image. */}
         <motion.div
           style={{
             scale: girlScale,
@@ -109,7 +171,7 @@ export default function ScrollHero() {
             visibility: girlGone ? "hidden" : "visible",
             pointerEvents: "none",
           }}
-          className="absolute inset-0"
+          className="absolute inset-0 bg-black"
         >
           <Image
             src="/girl.png"
@@ -121,32 +183,25 @@ export default function ScrollHero() {
           />
         </motion.div>
 
-        {/* Black wipe */}
+        {/* Stage 2/3 — video. Source is 720x1080 (vertical), rotated 90° to
+            fill the viewport horizontally. Muted + loop + playsInline so it
+            autoplays and sustains itself with no scroll input. */}
         <motion.div
-          style={{ opacity: blackOpacity }}
-          className="pointer-events-none absolute inset-0 bg-black"
-        />
-
-        {/* Cobweb — vertical photo rotated 90° to lie horizontally */}
-        <motion.div
-          style={{ opacity: cobwebOpacity }}
-          className="pointer-events-none absolute inset-0 overflow-hidden"
+          style={{ opacity: videoOpacity }}
+          className="pointer-events-none absolute inset-0 overflow-hidden bg-black"
         >
-          <motion.div
-            style={{ scale: cobwebScale }}
-            className="absolute left-1/2 top-1/2 h-[100vw] w-[100vh] -translate-x-1/2 -translate-y-1/2 rotate-90"
-          >
-            <Image
-              src="/cobweb.jpeg"
-              alt=""
-              fill
-              sizes="100vh"
-              className="object-cover"
-            />
-          </motion.div>
+          <video
+            ref={videoRef}
+            src="/video.mp4"
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="absolute left-1/2 top-1/2 h-[100vw] w-[100vh] max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover"
+          />
         </motion.div>
 
-        {/* "DESIGNER'S" — flies off the top. Starts snug above center. */}
+        {/* Stage 3/4 — "DESIGNER'S" flies off the top */}
         <motion.h2
           style={{ opacity: textOpacity, y: designerY }}
           className="font-gunter uppercase text-center tracking-[0.04em] text-[13vw] sm:text-[9vw] leading-[0.9] text-paper absolute left-1/2 top-[calc(50%-6vw)] -translate-x-1/2 -translate-y-1/2 w-full px-6"
@@ -154,7 +209,7 @@ export default function ScrollHero() {
           Designer&rsquo;s
         </motion.h2>
 
-        {/* "CHAOS" — flies off the bottom. Starts snug below center. */}
+        {/* "CHAOS" flies off the bottom */}
         <motion.h2
           style={{ opacity: textOpacity, y: chaosY }}
           className="font-gunter uppercase text-center tracking-[0.04em] text-[13vw] sm:text-[9vw] leading-[0.9] text-paper absolute left-1/2 top-[calc(50%+6vw)] -translate-x-1/2 -translate-y-1/2 w-full px-6"
@@ -162,10 +217,10 @@ export default function ScrollHero() {
           Chaos
         </motion.h2>
 
-        {/* Flipping garment stack — dead center, where the text was.
+        {/* Stage 6 — flipping outfit stack, full-viewport, over the static bg.
             perspective on the parent makes rotateX read as a real 3D flip. */}
-        <div
-          style={{ perspective: 1200 }}
+        <motion.div
+          style={{ perspective: 1200, opacity: stackVisible }}
           className="pointer-events-none absolute left-1/2 top-1/2 h-[85vh] w-[90vw] -translate-x-1/2 -translate-y-1/2"
         >
           {rotations.map((rotateX, i) => (
@@ -189,7 +244,7 @@ export default function ScrollHero() {
               />
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
