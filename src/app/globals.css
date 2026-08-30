@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN TOKENS
+   Swap these when you sit down with the client — this is the
+   only place color/spacing decisions should live.
+   ============================================================ */
+:root {
+  --paper: #f0ece3;   /* page background — warm, not stark white */
+  --ink: #16140f;      /* primary text / near-black */
+  --clay: #9c6b43;     /* accent — warm terracotta-bronze */
+  --moss: #3f4a3b;     /* secondary accent — deep muted green */
+  --line: #cfc7b4;     /* hairline rules / dividers */
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-clay: var(--clay);
+  --color-moss: var(--moss);
+  --color-line: var(--line);
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-inter);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: var(--clay);
+  color: var(--paper);
+}
+
+/* Visible keyboard focus everywhere — don't remove */
+:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 3px;
+}
+
+/* Gunter — display face for the scroll-hero title.
+   Drop the font file at public/fonts/Gunter.woff2 (or .ttf) and it kicks in;
+   until then it falls back to a condensed grotesque. */
+@font-face {
+  font-family: "Gunter";
+  src: url("/fonts/gunter.otf") format("opentype");
+  font-display: swap;
+}
+.font-gunter {
+  font-family: "Gunter", "Arial Narrow", system-ui, sans-serif;
+}
+
+/* Utility: uppercase tracked label style used for eyebrows / captions */
+.label-caps {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+}
+
+/* Marquee track — continuous horizontal scroll driven by Framer Motion,
+   this just holds the duplicated content so the loop is seamless */
+.marquee-track {
+  display: flex;
+  width: max-content;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .marquee-track {
+    animation: none !important;
+  }
+}
