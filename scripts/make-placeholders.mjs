@@ -78,6 +78,13 @@ const cats = [
     description:
       "Placeholder — a short bio, training and approach go here once written.",
   },
+  {
+    dir: "selected-press",
+    title: "Selected Press",
+    subtitle: "Features & Interviews",
+    description:
+      "Placeholder — press features, interviews and mentions collected here.",
+  },
 ];
 
 for (const c of cats) {

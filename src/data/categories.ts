@@ -19,7 +19,15 @@ export type Category = {
   subcategories?: Subcategory[];
 };
 
+// Order matters: the wheel lands on categories[0] first, holds ~2s, then
+// rotates. "About Me" is intentionally first.
 export const categories: Category[] = [
+  {
+    id: "about-me",
+    title: "About Me",
+    subtitle: "",
+    gradient: "linear-gradient(150deg, #2a0a08 0%, #7a2a1e 55%, #0a0a0a 100%)",
+  },
   {
     id: "empowerment-embodied",
     title: "Empowerment Embodied",
@@ -67,10 +75,10 @@ export const categories: Category[] = [
     gradient: "linear-gradient(150deg, #10202e 0%, #2a5a7a 55%, #0a0f16 100%)",
   },
   {
-    id: "about-me",
-    title: "About Me",
-    subtitle: "",
-    gradient: "linear-gradient(150deg, #2a0a08 0%, #7a2a1e 55%, #0a0a0a 100%)",
+    id: "selected-press",
+    title: "Selected Press",
+    subtitle: "Features & Interviews",
+    gradient: "linear-gradient(150deg, #1a1a1a 0%, #4a3a2a 55%, #0a0a0a 100%)",
   },
 ];
 
