@@ -1,5 +1,6 @@
 import Hero from "@/components/Hero";
 import ScrollHero from "@/components/ScrollHero";
+import CategoryWheel from "@/components/CategoryWheel";
 import Marquee from "@/components/Marquee";
 import CollectionGrid from "@/components/CollectionGrid";
 import About from "@/components/About";
@@ -11,6 +12,7 @@ export default function Home() {
     <>
       <main>
         <ScrollHero />
+        <CategoryWheel />
         <Hero />
         <Marquee />
         <CollectionGrid />
