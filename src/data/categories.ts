@@ -60,6 +60,18 @@ export const categories: Category[] = [
       { id: "trend-books", title: "Trend Books" },
     ],
   },
+  {
+    id: "digital-marketing",
+    title: "Digital Marketing",
+    subtitle: "Campaigns & Content",
+    gradient: "linear-gradient(150deg, #10202e 0%, #2a5a7a 55%, #0a0f16 100%)",
+  },
+  {
+    id: "about-me",
+    title: "About Me",
+    subtitle: "",
+    gradient: "linear-gradient(150deg, #2a0a08 0%, #7a2a1e 55%, #0a0a0a 100%)",
+  },
 ];
 
 export function getCategory(id: string): Category | undefined {

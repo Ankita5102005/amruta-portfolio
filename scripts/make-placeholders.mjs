@@ -64,6 +64,20 @@ const cats = [
     description:
       "Seasonal trend books: research, direction and mood compiled for the studio and its collaborators.",
   },
+  {
+    dir: "digital-marketing",
+    title: "Digital Marketing",
+    subtitle: "Campaigns & Content",
+    description:
+      "Campaign creative and content built for social and digital — art direction through to finished assets.",
+  },
+  {
+    dir: "about-me",
+    title: "About Me",
+    subtitle: "",
+    description:
+      "Placeholder — a short bio, training and approach go here once written.",
+  },
 ];
 
 for (const c of cats) {

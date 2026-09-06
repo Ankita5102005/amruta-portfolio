@@ -114,7 +114,9 @@ export default function ScrollHero() {
               fill
               priority
               sizes="100vw"
-              className="object-cover object-[58%_75%]"
+              // mobile: centred & higher so the whole face shows on a narrow
+              // portrait screen; desktop: framed slightly left
+              className="object-cover object-[50%_38%] md:object-[58%_75%]"
             />
           </motion.div>
         </motion.div>
