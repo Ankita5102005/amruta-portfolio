@@ -6,11 +6,15 @@
    only place color/spacing decisions should live.
    ============================================================ */
 :root {
-  --paper: #f0ece3;   /* page background — warm, not stark white */
-  --ink: #16140f;      /* primary text / near-black */
-  --clay: #9c6b43;     /* accent — warm terracotta-bronze */
-  --moss: #3f4a3b;     /* secondary accent — deep muted green */
-  --line: #cfc7b4;     /* hairline rules / dividers */
+  /* Dark theme is the site default. Token *names* are kept so existing
+     components (bg-paper / text-ink / text-clay …) invert automatically. */
+  --paper: #0a0a0a;   /* page background — near-black */
+  --ink: #f0ece3;      /* primary text — cream */
+  --clay: #d02c1e;     /* accent — signal red (sampled from girl.png) */
+  --moss: #7a2a1e;     /* secondary accent — deep maroon */
+  --line: #3a3a3a;     /* hairline rules / dividers on dark */
+  --noir: #0a0a0a;     /* explicit near-black (same as --paper now) */
+  --signal: #d02c1e;   /* explicit red */
 }
 
 @theme inline {
@@ -19,6 +23,8 @@
   --color-clay: var(--clay);
   --color-moss: var(--moss);
   --color-line: var(--line);
+  --color-noir: var(--noir);
+  --color-signal: var(--signal);
   --font-display: var(--font-fraunces);
   --font-body: var(--font-inter);
 }
@@ -31,6 +37,10 @@ html {
   scroll-behavior: smooth;
 }
 
+html {
+  color-scheme: dark;
+}
+
 body {
   background: var(--paper);
   color: var(--ink);
@@ -39,7 +49,7 @@ body {
 
 ::selection {
   background: var(--clay);
-  color: var(--paper);
+  color: var(--ink);
 }
 
 /* Visible keyboard focus everywhere — don't remove */

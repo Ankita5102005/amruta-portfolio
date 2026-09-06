@@ -212,7 +212,7 @@ export default function ScrollHero() {
         {/* Stage 3/4 — "DESIGNER'S" flies off the top */}
         <motion.h2
           style={{ opacity: textOpacity, y: designerY }}
-          className="font-gunter uppercase text-center tracking-[0.04em] text-[13vw] sm:text-[9vw] leading-[0.9] text-paper absolute left-1/2 top-[calc(50%-6vw)] -translate-x-1/2 -translate-y-1/2 w-full px-6"
+          className="font-gunter uppercase text-center tracking-[0.04em] text-[13vw] sm:text-[9vw] leading-[0.9] text-ink absolute left-1/2 top-[calc(50%-6vw)] -translate-x-1/2 -translate-y-1/2 w-full px-6"
         >
           Designer&rsquo;s
         </motion.h2>
@@ -220,7 +220,7 @@ export default function ScrollHero() {
         {/* "CHAOS" flies off the bottom */}
         <motion.h2
           style={{ opacity: textOpacity, y: chaosY }}
-          className="font-gunter uppercase text-center tracking-[0.04em] text-[13vw] sm:text-[9vw] leading-[0.9] text-paper absolute left-1/2 top-[calc(50%+6vw)] -translate-x-1/2 -translate-y-1/2 w-full px-6"
+          className="font-gunter uppercase text-center tracking-[0.04em] text-[13vw] sm:text-[9vw] leading-[0.9] text-ink absolute left-1/2 top-[calc(50%+6vw)] -translate-x-1/2 -translate-y-1/2 w-full px-6"
         >
           Chaos
         </motion.h2>

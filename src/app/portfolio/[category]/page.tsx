@@ -1,12 +1,10 @@
-// Placeholder dynamic route so the CategoryWheel links don't 404.
-// Prompt B replaces this with the real category grid.
+import { notFound, redirect } from "next/navigation";
+import CollectionView from "@/components/CollectionView";
+import { getCategoryContent } from "@/lib/categoryContent";
 
-const LABELS: Record<string, string> = {
-  athleisure: "Athleisure",
-  "high-fashion": "High Fashion",
-  streetwear: "Streetwear",
-  eveningwear: "Eveningwear",
-};
+// Server component. Reads public/images/categories/[category]/ —
+// meta.json for the header, every other file as a piece to show.
+// Editorial Design has no grid of its own: redirect to its sub-menu.
 
 export default async function CategoryPage({
   params,
@@ -14,19 +12,20 @@ export default async function CategoryPage({
   params: Promise<{ category: string }>;
 }) {
   const { category } = await params;
-  const label =
-    LABELS[category] ??
-    category
-      .split("-")
-      .map((w) => w[0]?.toUpperCase() + w.slice(1))
-      .join(" ");
+
+  if (category === "editorial-design") {
+    redirect("/portfolio/editorial-design");
+  }
+
+  const content = getCategoryContent([category]);
+  if (!content) notFound();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-6">
-      <h1 className="font-display text-[8vw] font-light italic leading-none text-ink">
-        {label}
-      </h1>
-      <p className="label-caps mt-6 text-clay">Coming soon</p>
-    </main>
+    <CollectionView
+      title={content.meta.title}
+      subtitle={content.meta.subtitle}
+      description={content.meta.description}
+      images={content.images}
+    />
   );
 }
