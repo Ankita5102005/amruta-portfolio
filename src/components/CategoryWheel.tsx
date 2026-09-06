@@ -73,6 +73,8 @@ export default function CategoryWheel() {
                 ? "/portfolio/editorial-design"
                 : `/portfolio/${cat.id}`;
 
+            const isActive = centredness > 0.5;
+
             return (
               <motion.div
                 key={cat.id}
@@ -90,43 +92,82 @@ export default function CategoryWheel() {
                   zIndex: 10 - Math.round(dist),
                 }}
                 className="absolute left-0 top-0"
-                whileHover={centredness > 0.5 ? { scale: 1.04 } : undefined}
+                whileHover={isActive ? { scale: 1.04 } : undefined}
               >
                 <Link href={href} className="block">
+                  {/* card frame + image */}
                   <div
                     style={{
-                      borderColor: centredness > 0.5 ? RED : RED_DIM,
-                      boxShadow:
-                        centredness > 0.5
-                          ? "0 0 40px rgba(208, 44, 30, 0.25)"
-                          : "none",
+                      borderColor: isActive ? RED : RED_DIM,
+                      boxShadow: isActive
+                        ? "0 0 40px rgba(208, 44, 30, 0.25)"
+                        : "none",
                       transition:
                         "border-color 0.3s ease, box-shadow 0.3s ease",
+                      overflow: "visible", // let the big title spill past edges
                     }}
-                    className="border"
+                    className="relative border"
                   >
                     <div
                       style={{ background: cat.gradient }}
                       className="relative h-0 w-full bg-cover bg-center pb-[100%]"
                     >
-                      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-1.5 bg-gradient-to-t from-black/75 to-transparent p-4 pt-10 text-center">
-                        <span className="font-gunter text-lg uppercase leading-tight tracking-[0.04em] text-ink">
-                          {cat.title}
-                        </span>
-                        {cat.subtitle && (
-                          <span className="label-caps text-ink/60">
-                            {cat.subtitle}
+                      {isActive ? (
+                        /* ACTIVE — oversized title spilling over the edges */
+                        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
+                          <span
+                            className="font-display italic leading-[1.0] text-ink"
+                            style={{
+                              fontSize: "clamp(2.75rem, 7.5vw, 4.75rem)",
+                              width: "128%", // spill past the card's left/right edges
+                              textShadow: "0 2px 24px rgba(0,0,0,0.6)",
+                            }}
+                          >
+                            {cat.title}
                           </span>
-                        )}
-                      </div>
+                          {cat.subtitle && (
+                            <span
+                              className="label-caps text-ink/70"
+                              style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}
+                            >
+                              {cat.subtitle}
+                            </span>
+                          )}
+                          <span
+                            className="pointer-events-auto mt-1 inline-block rounded-full border px-5 py-2 text-[0.65rem] font-medium uppercase tracking-[0.2em] transition-colors duration-300"
+                            style={{
+                              borderColor: RED,
+                              color: RED,
+                              background: "rgba(10,10,10,0.35)",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = RED;
+                              e.currentTarget.style.color = "#f0ece3";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background =
+                                "rgba(10,10,10,0.35)";
+                              e.currentTarget.style.color = RED;
+                            }}
+                          >
+                            View Collection
+                          </span>
+                        </div>
+                      ) : (
+                        /* SIDE — smaller, contained label at the bottom */
+                        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-1.5 bg-gradient-to-t from-black/75 to-transparent p-4 pt-10 text-center">
+                          <span className="font-display text-lg italic leading-tight text-ink">
+                            {cat.title}
+                          </span>
+                          {cat.subtitle && (
+                            <span className="label-caps text-ink/60">
+                              {cat.subtitle}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <span
-                    style={{ color: RED }}
-                    className="label-caps mt-3 block text-center"
-                  >
-                    View Collection
-                  </span>
                 </Link>
               </motion.div>
             );
