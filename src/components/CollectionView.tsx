@@ -11,6 +11,9 @@ type Props = {
   images: string[];
   /** shown small above the title, e.g. "Editorial Design" */
   eyebrow?: string;
+  /** a single tall strip (e.g. an exported portfolio deck) to show full-bleed
+   *  and continuously scrollable, instead of the staggered thumbnail grid. */
+  portfolioStrip?: string | null;
 };
 
 export default function CollectionView({
@@ -19,6 +22,7 @@ export default function CollectionView({
   description,
   images,
   eyebrow,
+  portfolioStrip,
 }: Props) {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const open = openIdx !== null ? images[openIdx] : null;
@@ -50,39 +54,61 @@ export default function CollectionView({
         )}
       </header>
 
-      {/* Image stack — staggered left / right down the page */}
-      <div className="mx-auto mt-20 flex max-w-5xl flex-col gap-16 md:mt-28 md:gap-24">
-        {images.map((src, i) => (
-          <motion.button
-            key={src}
-            type="button"
-            onClick={() => setOpenIdx(i)}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className={`group block w-full max-w-[900px] cursor-zoom-in ${
-              i % 2 === 0 ? "mr-auto" : "ml-auto"
-            }`}
-          >
-            <div className="relative w-full overflow-hidden border border-line">
-              <Image
-                src={src}
-                alt={`${title} — ${i + 1}`}
-                width={1600}
-                height={2000}
-                sizes="(max-width: 900px) 100vw, 900px"
-                className="h-auto w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-              />
-            </div>
-          </motion.button>
-        ))}
-        {images.length === 0 && (
-          <p className="label-caps text-center text-ink/40">
-            Photography coming soon
-          </p>
-        )}
-      </div>
+      {/* Portfolio strip — one tall deck export, shown full-bleed and simply
+          scrollable (no crop, no stagger — it's already laid out). */}
+      {portfolioStrip ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mx-auto mt-16 w-full max-w-3xl md:mt-20"
+        >
+          <Image
+            src={portfolioStrip}
+            alt={`${title} — full portfolio`}
+            width={1400}
+            height={1400}
+            sizes="(max-width: 768px) 100vw, 768px"
+            className="h-auto w-full"
+            priority={false}
+          />
+        </motion.div>
+      ) : (
+        /* Image stack — staggered left / right down the page */
+        <div className="mx-auto mt-20 flex max-w-5xl flex-col gap-16 md:mt-28 md:gap-24">
+          {images.map((src, i) => (
+            <motion.button
+              key={src}
+              type="button"
+              onClick={() => setOpenIdx(i)}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className={`group block w-full max-w-[900px] cursor-zoom-in ${
+                i % 2 === 0 ? "mr-auto" : "ml-auto"
+              }`}
+            >
+              <div className="relative w-full overflow-hidden border border-line">
+                <Image
+                  src={src}
+                  alt={`${title} — ${i + 1}`}
+                  width={1600}
+                  height={2000}
+                  sizes="(max-width: 900px) 100vw, 900px"
+                  className="h-auto w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                />
+              </div>
+            </motion.button>
+          ))}
+          {images.length === 0 && (
+            <p className="label-caps text-center text-ink/40">
+              Photography coming soon
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Lightbox */}
       <AnimatePresence>

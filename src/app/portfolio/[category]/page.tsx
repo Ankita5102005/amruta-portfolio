@@ -26,6 +26,7 @@ export default async function CategoryPage({
       subtitle={content.meta.subtitle}
       description={content.meta.description}
       images={content.images}
+      portfolioStrip={content.portfolioStrip}
     />
   );
 }

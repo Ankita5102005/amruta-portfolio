@@ -16,9 +16,15 @@ export type CategoryMeta = {
 
 export type CategoryContent = {
   meta: CategoryMeta;
-  /** web paths, e.g. /images/categories/shringar/01.jpg — sorted by filename */
+  /** web paths, e.g. /images/categories/shringar/01.jpg — sorted by filename.
+   *  Excludes cover.* and portfolio.* (those are handled separately below). */
   images: string[];
+  /** a single tall strip image (e.g. a full portfolio-deck export) to show
+   *  as one continuously scrollable page, instead of the thumbnail grid. */
+  portfolioStrip: string | null;
 };
+
+const RESERVED = /^(cover|portfolio)\./i;
 
 /**
  * @param segments folder path under categories/, e.g. ["shringar"] or
@@ -32,11 +38,16 @@ export function getCategoryContent(
   if (!existsSync(metaPath)) return null;
 
   const meta = JSON.parse(readFileSync(metaPath, "utf8")) as Partial<CategoryMeta>;
+  const files = readdirSync(dir).filter((f) => IMG_EXT.test(f));
 
-  const images = readdirSync(dir)
-    .filter((f) => IMG_EXT.test(f))
+  const portfolioFile = files.find((f) => /^portfolio\./i.test(f));
+  const webPath = (f: string) =>
+    "/" + ["images", "categories", ...segments, f].join("/");
+
+  const images = files
+    .filter((f) => !RESERVED.test(f))
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-    .map((f) => "/" + ["images", "categories", ...segments, f].join("/"));
+    .map(webPath);
 
   return {
     meta: {
@@ -45,5 +56,6 @@ export function getCategoryContent(
       description: meta.description ?? "",
     },
     images,
+    portfolioStrip: portfolioFile ? webPath(portfolioFile) : null,
   };
 }

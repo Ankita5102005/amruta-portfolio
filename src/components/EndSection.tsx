@@ -3,12 +3,11 @@
 import { motion } from "framer-motion";
 
 // Closing section — black, compact (about half a viewport tall).
-// Name / email / LinkedIn are PLACEHOLDERS; tagline is final copy.
+// Name is a PLACEHOLDER; email is final, tagline is final copy.
 const DESIGNER_NAME = "Designer Name";
 const TAGLINE =
   "A working portfolio of collections, capsules, and one-off pieces — designed and constructed by hand.";
-const EMAIL = "hello@example.com";
-const LINKEDIN = "https://linkedin.com/";
+const EMAIL = "bhorshettia@gmail.com";
 
 const reveal = {
   hidden: { opacity: 0, y: 20 },
@@ -65,17 +64,6 @@ export default function EndSection() {
         >
           {TAGLINE}
         </motion.p>
-
-        <motion.a
-          custom={3}
-          variants={reveal}
-          href={LINKEDIN}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-8 w-fit text-sm font-medium uppercase tracking-[0.2em] text-ink/60 transition-colors hover:text-ink"
-        >
-          LinkedIn
-        </motion.a>
       </motion.div>
 
       <div className="relative mt-10 border-t border-ink/10 pt-5">
