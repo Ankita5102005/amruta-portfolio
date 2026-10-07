@@ -3,7 +3,10 @@
 //
 // `cover` — a real photo (public/images/categories/<id>/cover.png) used on
 // the wheel card. Falls back to `gradient` (a CSS swatch) when there's no
-// cover yet.
+// cover yet. By default, a card with a `cover` hides its title/subtitle
+// overlay (the photo already carries the name) — set `showTitleOnCover: true`
+// to keep the label even though there's a cover photo (e.g. Resume, whose
+// photo doesn't say "Resume").
 //
 // `externalHref` — for a card that isn't a /portfolio/[id] gallery at all
 // (e.g. Resume), link straight out instead.
@@ -20,6 +23,10 @@ export type Category = {
   subtitle: string;
   gradient: string;
   cover?: string;
+  showTitleOnCover?: boolean;
+  /** set false to skip the "View Collection" pill below the active card
+   *  (e.g. Resume, where clicking the card itself already opens the PDF). */
+  showViewCollection?: boolean;
   externalHref?: string;
   subcategories?: Subcategory[];
 };
@@ -67,6 +74,9 @@ export const categories: Category[] = [
     title: "Resume",
     subtitle: "",
     gradient: "linear-gradient(150deg, #1a1a1a 0%, #3a3a3a 55%, #0a0a0a 100%)",
+    cover: "/images/categories/resume/cover.png",
+    showTitleOnCover: true,
+    showViewCollection: false,
     externalHref: "/Resume.pdf",
   },
 ];

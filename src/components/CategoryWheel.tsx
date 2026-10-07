@@ -54,7 +54,7 @@ export default function CategoryWheel() {
       <div
         onMouseEnter={() => (pausedRef.current = true)}
         onMouseLeave={() => (pausedRef.current = false)}
-        className="relative h-[68vh] w-full max-w-6xl"
+        className="relative h-[75vh] min-h-[560px] w-full max-w-6xl"
       >
         {categories.map((cat, i) => {
           // signed slot offset from the centre, wrapping so it's the shortest way
@@ -89,8 +89,6 @@ export default function CategoryWheel() {
                 opacity,
                 filter: `blur(${blur}px)`,
                 width: baseCard,
-                marginLeft: -baseCard / 2,
-                marginTop: -baseCard / 2,
                 zIndex: 100 - Math.round(dist * 10),
                 pointerEvents: hidden ? "none" : "auto",
                 transition: "transform 0.5s ease, opacity 0.5s ease, filter 0.5s ease",
@@ -114,9 +112,13 @@ export default function CategoryWheel() {
                       className="object-cover"
                     />
                   )}
-                  {!cat.cover &&
+                  {(!cat.cover || cat.showTitleOnCover) &&
                     (isActive ? (
-                      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 text-center">
+                      <div
+                        className={`pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 text-center ${
+                          cat.cover ? "bg-black/25" : ""
+                        }`}
+                      >
                         <span
                           className="font-display italic leading-[1.0] text-ink"
                           style={{
@@ -150,7 +152,7 @@ export default function CategoryWheel() {
               </Link>
 
               {/* View Collection — below the square, not overlaid on it */}
-              {isActive && (
+              {isActive && cat.showViewCollection !== false && (
                 <Link
                   href={href}
                   {...linkProps}
