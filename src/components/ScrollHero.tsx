@@ -89,9 +89,21 @@ export default function ScrollHero() {
     [40, 0, 0, 900], // settle, hold, then off the bottom
   );
 
+  // Background lightens from black to a light grey as the text separates and
+  // exits, so the hero hands off cleanly into the (also light-grey) carousel
+  // section right after — no black/grey seam between the two.
+  const bgColor = useTransform(
+    scrollYProgress,
+    [0.78, 1],
+    ["#0a0a0a", "#d9d9d9"],
+  );
+
   return (
     <section ref={containerRef} className="relative h-[520vh] bg-black">
-      <div className="sticky top-0 h-screen overflow-hidden bg-black">
+      <motion.div
+        style={{ backgroundColor: bgColor }}
+        className="sticky top-0 h-screen overflow-hidden"
+      >
         {/* Stage 1 — girl. girl_extended.png has red bleed on all sides so it
             can cover the whole viewport with object-cover, no letterbox. */}
         <motion.div
@@ -161,7 +173,7 @@ export default function ScrollHero() {
         >
           Chaos
         </motion.h2>
-      </div>
+      </motion.div>
     </section>
   );
 }
